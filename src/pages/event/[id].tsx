@@ -3,6 +3,7 @@ import React from 'react'
 import { events } from '../../eventDetails';
 import Image from 'next/image';
 import NavMenu from '@/components/NavMenu';
+import Link from 'next/link';
 
 
 const EventDetails = () => {
@@ -15,6 +16,13 @@ const EventDetails = () => {
     if (!event) {
         return <div>Event not found</div>
     }
+    const handleViewRuleBook = () => {
+        // Check if the rulebook is a full URL
+        if (event.rulebook?.startsWith('http://') || event.rulebook?.startsWith('https://')) {
+            // If it's a full URL, open it directly
+            window.open(event.rulebook, '_blank');
+        }
+    };
 
     return (
         <>
@@ -73,7 +81,8 @@ const EventDetails = () => {
                         <div className="md:p-10 ">
                             <h4 className='text-3xl  font-bold font-headings md:text-5xl'>
                                 About Event.
-                            </h4>                        <p className='md:p-5 text-justify mt-4'>{event.aboutEvent}</p>
+                            </h4>                        
+                            <p className='md:p-5 text-justify mt-4'>{event.aboutEvent}</p>
                         </div>
                         <div className="md:p-10">
                             <h4 className='text-3xl font-bold  font-headings md:text-5xl'>
@@ -85,42 +94,13 @@ const EventDetails = () => {
                             </ul>
                         </div>
                         <div className="md:p-10">
-                            <h4 className='text-3xl font-bold  font-headings md:text-5xl'>
-                                Rules and Regulations</h4>
-                            <ul className="list-disc lg:pl-4 mt-5 ">
-                                {event.rules.map((item, index) => (
-                                    <li className='lg:p-2 text-justify lg:ml-10' key={index}>{item}</li>
-                                ))}
-                            </ul>
-                        </div>
-                        <div className="md:p-10">
-                            <h4 className='text-3xl font-bold  font-headings md:text-5xl'>
-                                Judging Criteria</h4>
-                            <ul className="list-disc pl-4 mt-5">
-                                {event.judgingCriteria.map((item, index) => (
-                                    <li className='lg:p-2 text-justify lg:ml-10' key={index}>{item}</li>
-                                ))}
-                            </ul>
-                        </div>
-                        <div className="md:p-10">
-                            <h4 className='text-3xl font-bold  font-headings md:text-5xl'>
-                                Student Coordinators</h4>
-                            <div className="space-y-2 mt-5">
-                                {event.coordinators.students.map((item, index) => (
-                                    <p className='lg:p-2 lg:ml-10 text-justify ' key={index}>
-                                        {item.name} (<a href={`tel:${item.phone}`}>{item.phone}</a>)
-                                    </p>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="md:p-10">
-                            <h4 className='text-3xl font-bold  font-headings md:text-5xl'>
-                                Faculty Coordinators</h4>
-                            <div className="space-y-2 mt-5 ">
-                                {event.coordinators.faculty.map((item, index) => (
-                                    <p className='lg:p-2 text-justify lg:ml-10 ' key={index}>Prof. {item}</p>
-                                ))}
-                            </div>
+                            <button
+                                type="button"
+                                onClick={handleViewRuleBook}
+                                className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-base px-6 py-3.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+                            >
+                                Rule Book
+                            </button>
                         </div>
                     </div>
                 </div>

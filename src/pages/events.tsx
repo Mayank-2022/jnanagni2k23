@@ -52,6 +52,7 @@ const Events = ({ headerShown }: { headerShown: any }) => {
                                                 <Image className="h-auto max-w-full  rounded-xl" src={event.image} alt="" />
                                             </div>
                                             <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 pt-3 text-center  ">{event.name}</h5>
+                                        
                                         </div>
                                     </Link>
                                 ))}

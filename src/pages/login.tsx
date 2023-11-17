@@ -1,73 +1,173 @@
 import Container from '@/components/Layout';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import { useLoginMutation } from '@/store/apiSlice';
-import { SerializedError } from '@reduxjs/toolkit';
-import { FetchBaseQueryError } from '@reduxjs/toolkit/dist/query';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { Auth, UserCredential, createUserWithEmailAndPassword as createUserWithEmailAndPasswordFirebase, getAuth, signInWithEmailAndPassword as signInWithEmailAndPasswordFirebase } from 'firebase/auth';
+import { Database, ref as databaseRef, set as databaseSet, getDatabase } from 'firebase/database';
+import { app } from './firebase';
 
+
+// Initialize auth and database with the correct types
+const auth = getAuth(app);
+const database = getDatabase(app);
+
+  
 
 export default function Login() {
+    type UserType = {
+        id: string;
+        name: string;
+        // Add other properties as needed
+      };      
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [login, { data, isLoading, error }] = useLoginMutation();
-    const router = useRouter()
-    const handleSubmit = (e: any) => {
-        e.preventDefault();
-        console.log('Email:', email);
-        console.log('Password:', password);
-        const credentials = {
-            email: email,
-            password: password
-        }
-        login(credentials);
+    const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [isSignUp, setIsSignUp] = useState(false);
+    const [loginData, setLoginData] = useState<{ user: UserType } | null>(null);
+    const [loginError, setLoginError] = useState(null);
+    const [signUpLoading, setSignUpLoading] = useState(false);
+    const [loginLoading, setLoginLoading] = useState(false);
+    
+    const [signUpError, setSignUpError] = useState(null);
+    const router = useRouter();
+
+    const validateEmail = (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    const validatePhoneNumber = (value: string): boolean => /^\d{10}$/.test(value);
+    const validatePassword = (value: string): boolean => /^(?=.*[A-Za-z])(?=.*\d).{6,}$/.test(value);
+    const handleFirebaseError = (error: any) => {
+        // Handle Firebase authentication errors
+        console.error(error);
     };
 
-    if (isLoading) {
-        <LoadingSpinner />
-    }
-    if (data?.success) {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
+    const handleFirebaseLogin = async () => {
+        try {
+            setLoginLoading(true);
+            const response: UserCredential = await signInWithEmailAndPasswordFirebase(auth, email, password);
+            console.log('Logged in successfully', response);
+            // If you need the user, you can access it like this:
+            const user = response.user;
+        } catch (error: any) {
+            handleFirebaseError(error);
+            // Set login error
+            setLoginError(error.message); // Or handle it in a way that suits your application
         }
-        router.replace('/');
-    }
-    if (error) {
-        console.log(error);
-    }
+    };
+
+    const handleFirebaseSignUp = async () => {
+        try {
+            setSignUpLoading(true);
+            const response: UserCredential = await createUserWithEmailAndPasswordFirebase(auth, email, password);
+    
+            // Extract user information from the UserCredential
+            const user: UserType = {
+                id: response.user.uid,
+                name,
+                // Add other properties as needed
+            };
+    
+            // Save additional user data to Firebase Realtime Database
+            await databaseSet(databaseRef(database, `users/${response.user.uid}`), {
+                name,
+                email,
+                phone,
+            });
+    
+            // Handle successful sign-up, e.g., redirect to the dashboard
+            console.log('Signed up successfully', response);
+            setLoginData({ user });
+        } catch (error) {
+            handleFirebaseError(error);
+        }
+    };
+
+    const toggleSection = () => {
+        setIsSignUp(!isSignUp);
+    };
+
+    const handleSubmit = async (e: any) => {
+        e.preventDefault();
+
+        if (isSignUp) {
+            // Validation for signup
+            if (!validateEmail(email) || !validatePhoneNumber(phone) || !validatePassword(password) || password !== confirmPassword) {
+                // Validation failed
+                return;
+            }
+
+            // Call Firebase sign-up function
+            await handleFirebaseSignUp();
+        } else {
+            // Call Firebase login function
+            await handleFirebaseLogin();
+        }
+    };
+
+    useEffect(() => {
+        // Handle successful sign up
+        if (loginData?.user) {
+            // Example: Redirect to the dashboard or show a success message
+            console.log('Successfully signed up:', loginData);
+            router.replace('/');
+        }
+    }, [loginData, router]);
 
     return (
         <Container>
-
             <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-lg text-center">
-                    <h1 className="text-2xl text-white font-bold sm:text-3xl">Login to book your ticket</h1>
-                    <p className="mt-4 text-gray-500">Please use your GKV Email if available</p>
+                    <h1 className="text-2xl text-white font-bold sm:text-3xl">
+                        {isSignUp ? 'Sign Up' : 'Login'} to book your ticket
+                    </h1>
+                    <p className="mt-4 text-gray-500">
+                        Please use your GKV Email if available
+                    </p>
                 </div>
                 <div className="mx-auto mb-0 mt-8 max-w-md space-y-4">
+                    {isSignUp && (
+                        <>
+                            <div>
+                                <label className="sr-only">Name</label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
+                                        placeholder="Enter your name"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="sr-only">Phone</label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        className={`w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm ${validatePhoneNumber(phone) ? 'border-green-500' : 'border-red-500'}`}
+                                        placeholder="Enter your phone number"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                    />
+                                    {!validatePhoneNumber(phone) && phone && (
+                                        <p className="text-red-500 mt-2">Please enter a valid 10-digit phone number</p>
+                                    )}
+                                </div>
+                            </div>
+                        </>
+                    )}
                     <div>
                         <label className="sr-only">Email</label>
                         <div className="relative">
                             <input
                                 type="email"
-                                className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
+                                className={`w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm ${validateEmail(email) ? 'border-green-500' : 'border-red-500'}`}
                                 placeholder="Enter email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
-                            <span className="absolute inset-y-0 end-0 grid place-content-center px-4">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4 text-gray-400"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    {/* Location icon path */}
-                                </svg>
-                            </span>
-
+                            {!validateEmail(email) && email && (
+                                <p className="text-red-500 mt-2">Please enter a valid email address</p>
+                            )}
                         </div>
                     </div>
                     <div>
@@ -75,45 +175,54 @@ export default function Login() {
                         <div className="relative">
                             <input
                                 type="password"
-                                className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
+                                className={`w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm ${validatePassword(password) ? 'border-green-500' : 'border-red-500'}`}
                                 placeholder="Enter password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
-                            <span className="absolute inset-y-0 end-0 grid place-content-center px-4">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4 text-gray-400"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    {/* Password icon path */}
-                                </svg>
-                            </span>
-                            {error && <p className="text-red-500 mt-2">{(error as any).data?.message}</p>}
+                            {!validatePassword(password) && password && (
+                                <p className="text-red-500 mt-2">Password must be at least 6 characters long and include a number</p>
+                            )}
+                            {loginError && <p className="text-red-500 mt-2">{(loginError as any)?.data?.message}</p>}
+                            {signUpError && <p className="text-red-500 mt-2">{(signUpError as any)?.data?.message}</p>}
+
                         </div>
                     </div>
+                    {isSignUp && (
+                        <div>
+                            <label className="sr-only">Confirm Password</label>
+                            <div className="relative">
+                                <input
+                                    type="password"
+                                    className={`w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm ${confirmPassword === password ? 'border-green-500' : 'border-red-500'}`}
+                                    placeholder="Confirm password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                />
+                                {confirmPassword !== password && confirmPassword && (
+                                    <p className="text-red-500 mt-2">Passwords do not match</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
                     <div className="flex items-center">
                         <button
                             onClick={handleSubmit}
-                            className="inline-block mt-5 w-full rounded-lg bg-[#EACD69] px-5 py-3 text-sm font-bold text-black "
+                            className="inline-block mt-5 w-full rounded-lg bg-[#EACD69] px-5 py-3 text-sm font-bold text-black"
                         >
-                            {isLoading ?
-                                (
-                                    <div role="status " className='flex justify-center'>
-                                        <svg aria-hidden="true" className="w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-black" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
-                                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
-                                        </svg>
-                                        <span className="sr-only">Loading...</span>
-                                    </div>
-                                ) : 'Sign In '}
-
+                            {isSignUp ? (signUpLoading ? 'Signing Up...' : 'Sign Up') : (loginLoading ? 'Logging In...' : 'Login')}
+                        </button>
+                    </div>
+                    <div className="flex items-center justify-center">
+                        <button
+                            onClick={toggleSection}
+                            className="text-gray-500 hover:underline focus:outline-none"
+                        >
+                            {isSignUp ? 'Already have an account? Sign In' : 'Don\'t have an account? Sign Up'}
                         </button>
                     </div>
                 </div>
             </div>
-        </Container >
+        </Container>
     );
 }
