@@ -49,7 +49,7 @@ const Events = ({ headerShown }: { headerShown: any }) => {
                 const eventsData: EventType[] = eventsCollection.docs.map((doc) => {
                     const data = doc.data();
                     return {
-                        id: doc.id,
+                        id: data.id,
                         name: data.name || 'Default Name',
                         alias: data.alias || 'Default Alias',
                         image: data.image || 'Default Image URL',
@@ -98,7 +98,7 @@ const Events = ({ headerShown }: { headerShown: any }) => {
                         <div className='container justify-center lg:max-w-[1300px]'>
                             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 '>
                                 {eventToShow.map((event) => (
-                                    <Link key={event.id} href={{ pathname: `/event/${event.alias}` }}>
+                                    <Link key={event.id} href={{ pathname: `/event/${event.id}` }}>
                                         <div className='bg-slate-100 p-3 rounded-3xl m-4'>
                                             <div>
                                                 <Image
