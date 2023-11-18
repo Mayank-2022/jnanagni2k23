@@ -1,26 +1,87 @@
-import { useRouter } from 'next/router';
-import React from 'react'
-import { events } from '../../eventDetails';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 import NavMenu from '@/components/NavMenu';
-import Link from 'next/link';
+import { collection, addDoc, getDocs, query, where, setDoc } from 'firebase/firestore';
+import { db } from './../firebase';
 
+interface EventType {
+    id: string;
+    name: string;
+    alias: string;
+    image: string;
+    aboutEvent: string;
+    eventDetail: string[];
+    rulebook: string;
+    schedule: {
+        day: string;
+        venue: string;
+        time: string;
+    };
+}
 
 const EventDetails = () => {
     const router = useRouter();
-
     const { id } = router.query;
+    const [event, setEvent] = useState<EventType | null>(null);
 
-    const event = events.find((event) => event.alias === id);
+    useEffect(() => {
+        const getEventFromFirestore = async () => {
+            try {
+                const q = query(collection(db, 'events'), where('id', '==', Number(id)));
+                const eventDoc = await getDocs(q);
+                if (eventDoc.docs.length === 0) {
+                    console.error(`Event with id ${id} not found`);
+                    return;
+                }
+
+                const eventData = eventDoc.docs[0].data() as EventType;
+                console.log('Fetched event data:', eventData);
+
+                setEvent({
+                    ...eventData,
+                    id: eventDoc.docs[0].id,
+                });
+            } catch (error) {
+                console.error('Error fetching event from Firestore:', error);
+            }
+        };
+
+        if (id) {
+            getEventFromFirestore();
+        }
+    }, [id]);
 
     if (!event) {
-        return <div>Event not found</div>
+        return <div>Loading...</div>;
     }
+
     const handleViewRuleBook = () => {
-        // Check if the rulebook is a full URL
         if (event.rulebook?.startsWith('http://') || event.rulebook?.startsWith('https://')) {
-            // If it's a full URL, open it directly
             window.open(event.rulebook, '_blank');
+        }
+    };
+
+    const registerEvent = async () => {
+        try {
+            if (!event) {
+                console.error('Event data is not available');
+                return;
+            }
+
+            // Get a reference to the collection
+            const eventRegistrationCollection = collection(db, 'event_registration');
+
+            // Add the data to the collection, and Firestore will generate a unique document ID
+            const eventRef = await addDoc(eventRegistrationCollection, {
+                event_id: event.id,
+                event_name: event.name,
+                user_id : '123abc' 
+                // Add other fields you want to save in the document
+            });
+            console.log('Event data saved successfully! Document ID:', eventRef.id);
+        } catch (error) {
+            console.error('Error saving event data:', error);
         }
     };
 
@@ -40,10 +101,10 @@ const EventDetails = () => {
                                     {/* <PageViews slug={slug} /> */}
                                 </div>
                                 {/* {publishedOn !== modifiedDate && (
-                  <p className='mt-0 text-sm text-slate-500 md:text-base dark:text-slate-500'>
-                    (Updated on {modifiedDate})
-                  </p>
-                )} */}
+              <p className='mt-0 text-sm text-slate-500 md:text-base dark:text-slate-500'>
+                (Updated on {modifiedDate})
+              </p>
+            )} */}
                             </div>
                         </div>
                         <div className='my-12'>
@@ -81,8 +142,7 @@ const EventDetails = () => {
                         <div className="md:p-10 ">
                             <h4 className='text-3xl  font-bold font-headings md:text-5xl'>
                                 About Event.
-                            </h4>                        
-                            <p className='md:p-5 text-justify mt-4'>{event.aboutEvent}</p>
+                            </h4>                        <p className='md:p-5 text-justify mt-4'>{event.aboutEvent}</p>
                         </div>
                         <div className="md:p-10">
                             <h4 className='text-3xl font-bold  font-headings md:text-5xl'>
@@ -94,20 +154,28 @@ const EventDetails = () => {
                             </ul>
                         </div>
                         <div className="md:p-10">
-                            <button
-                                type="button"
-                                onClick={handleViewRuleBook}
-                                className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-base px-6 py-3.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
-                            >
-                                Rule Book
-                            </button>
-                        </div>
+      <button
+        type="button"
+        onClick={handleViewRuleBook}
+        className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-base px-6 py-3.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+      >
+        Rule Book
+      </button>
+      <button
+        type="button"
+        onClick={registerEvent}
+        className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-base px-6 py-3.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+        style={{ marginLeft: '15px' }} 
+      >
+        Register
+      </button>
+    </div>
                     </div>
                 </div>
             </div >
         </>
 
-    )
-}
+    );
+};
 
-export default EventDetails
+export default EventDetails;
