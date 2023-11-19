@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import NavMenu from '@/components/NavMenu';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getDocs, query, where } from 'firebase/firestore';
 import { db } from './firebase';
 import Image from 'next/image';
 
@@ -35,52 +35,36 @@ const Dashboard: React.FC = () => {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const eventsCollection = collection(db, 'event_registration');
-                const eventsQuery = query(eventsCollection, where('user_id', '==', '123abc'));
-                const eventsSnapshot = await getDocs(eventsQuery);
-
+                // Fetch events where user_id is '123abc'
+                const userEventsRegistration = await getDocs(query(collection(db, 'event_registration'), where('user_id', '==', '123abc')));
                 const eventsData: EventType[] = [];
-                for (const doc of eventsSnapshot.docs) {
-                    const eventData = doc.data();
-                    // Use event_id to fetch detailed event information from the 'events' collection
-                    const eventDetail = await fetchEventDetail(eventData.event_id);
-                    eventsData.push({ id: eventData.event_id, name: eventDetail.name, image: eventDetail.image });
+                // Fetch all events to avoid querying the 'events' collection multiple times
+                const allEvents = await getDocs(collection(db, 'events'));
+
+                for (const eachUserEvent of userEventsRegistration.docs) {
+                    const event_id = eachUserEvent.data().event_id;
+                    // Find the event details using the event_id
+                    const eventDetail = allEvents.docs.find((doc) => doc.id === event_id);
+
+                    if (eventDetail) {
+                        const eventData = eventDetail.data();
+                        eventsData.push({
+                            id: event_id,
+                            name: eventData.name || 'Default Event Name',
+                            image: eventData.image || 'Default Image URL',
+                            // Add other properties as needed
+                        });
+                    }
                 }
+
                 setEvents(eventsData);
             } catch (error) {
                 console.error('Error fetching events:', error);
             }
         };
 
-        const fetchEventDetail = async (event_id: string) => {
-            try {
-              const eventDoc = await getDocs(query(collection(db, 'events')));
-              eventDoc.forEach((doc) => {
-                // doc.data() is never undefined for query doc snapshots
-                console.log(doc.id, " => ", doc.data());
-              });
-              
-              console.log('event_id', event_id);
-          
-              // Check if the document exists
-              if (!eventDoc.empty) {
-                const eventData = eventDoc.docs[0].data();
-                return {
-                  name: eventData.name || 'Default Event Name',
-                  image: eventData.image || 'Default Image URL',
-                };
-              } else {
-                // If the document doesn't exist
-                return { name: 'Default Event Name', image: 'Default Image URL' };
-              }
-            } catch (error) {
-              console.error('Error fetching event detail:', error);
-              return { name: 'Default Event Name', image: 'Default Image URL' };
-            }
-          };
-          
-          fetchEvents();          
-        }, []);          
+        fetchEvents();
+    }, []);
 
     return (
         <div>
@@ -90,8 +74,8 @@ const Dashboard: React.FC = () => {
                 <div className="w-3/4 p-4 flex flex-col items-center">
                     <h2 className="text-2xl font-bold mb-4">Events</h2>
                     {events.map((event) => (
-                        <div key={event.id} className='bg-slate-100 p-3 rounded-3xl m-4'>
-                            <div className="flex items-center justify-center"> {/* Centering the content */}
+                        <div key={event.id} className='bg-slate-100 p-0 rounded-3xl m-4'>
+                            <div className='bg-slate-100 p-0 rounded-3xl m-4'>
                                 <div>
                                     <Image
                                         className='h-auto max-w-full rounded-xl'
@@ -102,7 +86,7 @@ const Dashboard: React.FC = () => {
                                         height={1080}
                                     />
                                 </div>
-                                <h5 className='mb-2 text-2xl font-bold tracking-tight text-gray-900 pt-3 text-center'>{event.name}</h5>
+                                <h5 className='mb-2 text-2xl font-bold tracking-tight text-gray-900 pt-3 text-center '>{event.name}</h5>
                             </div>
                         </div>
                     ))}
