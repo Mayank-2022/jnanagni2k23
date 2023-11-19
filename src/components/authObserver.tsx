@@ -1,7 +1,7 @@
 // authObserver.ts
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from './../pages/firebase';
+import { auth } from '../../firebase';
 
 const useAuthObserver = () => {
   const [user, setUser] = useState<User | null>(null);

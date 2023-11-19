@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import NavMenu from '@/components/NavMenu';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from '../../firebase';
 import Image from 'next/image';
 import useAuthObserver from './../components/authObserver';
 import Link from 'next/link';

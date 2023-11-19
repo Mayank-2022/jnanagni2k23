@@ -1,6 +1,6 @@
 import { Auth, UserCredential, createUserWithEmailAndPassword as createUserWithEmailAndPasswordFirebase, getAuth, signInWithEmailAndPassword as signInWithEmailAndPasswordFirebase } from 'firebase/auth';
 import { Database, ref as databaseRef, set as databaseSet, getDatabase } from 'firebase/database';
-import { app, auth } from './../pages/firebase';
+import { app, auth } from '../../firebase';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 interface CheckoutSessionArgs {

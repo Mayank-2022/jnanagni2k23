@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Auth, UserCredential, createUserWithEmailAndPassword as createUserWithEmailAndPasswordFirebase, getAuth, signInWithEmailAndPassword as signInWithEmailAndPasswordFirebase } from 'firebase/auth';
 import { Database, ref as databaseRef, set as databaseSet, getDatabase } from 'firebase/database';
-import { app } from './firebase';
+import { app } from '../../firebase';
 
 
 // Initialize auth and database with the correct types

@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import NavMenu from '@/components/NavMenu';
 import { collection, getDocs, query } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from '../../firebase';
 
 interface EventType {
     id: string;
