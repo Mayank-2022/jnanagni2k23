@@ -44,93 +44,93 @@ const Events = ({ headerShown }: { headerShown: any }) => {
 
     useEffect(() => {
         const getEventsFromFirestore = async () => {
-            try {
-                const eventsCollection = await getDocs(query(collection(db, 'events')));
-                const eventsData: EventType[] = eventsCollection.docs.map((doc) => {
-                    const data = doc.data();
-                    return {
-                        id: data.id,
-                        name: data.name || 'Default Name',
-                        alias: data.alias || 'Default Alias',
-                        image: data.image || 'Default Image URL',
-                        aboutEvent: data.aboutEvent || 'Default About Event',
-                        eventDetail: data.eventDetail || ['Default Event Detail'],
-                        rulebook: data.rulebook || 'Default Rulebook URL',
-                        schedule: {
-                            day: data.schedule?.day || 'Default Day',
-                            venue: data.schedule?.venue || 'Default Venue',
-                            time: data.schedule?.time || 'Default Time',
-                        },
-                        // Add other properties or adjust as needed
-                    };
-                });
-                setEvents(eventsData);
-            } catch (error) {
-                console.error('Error fetching events from Firestore:', error);
-            }
+          try {
+            const eventsCollection = await getDocs(query(collection(db, 'events')));
+            const eventsData: EventType[] = eventsCollection.docs.map((doc) => {
+              const data = doc.data();
+              return {
+                id: doc.id, // Add the document ID to the event data
+                name: data.name || 'Default Name',
+                alias: data.alias || 'Default Alias',
+                image: data.image || 'Default Image URL',
+                aboutEvent: data.aboutEvent || 'Default About Event',
+                eventDetail: data.eventDetail || ['Default Event Detail'],
+                rulebook: data.rulebook || 'Default Rulebook URL',
+                schedule: {
+                  day: data.schedule?.day || 'Default Day',
+                  venue: data.schedule?.venue || 'Default Venue',
+                  time: data.schedule?.time || 'Default Time',
+                },
+              };
+            });
+            setEvents(eventsData);
+          } catch (error) {
+            console.error('Error fetching events from Firestore:', error);
+          }
         };
-
+    
         getEventsFromFirestore();
-    }, []); // Empty dependency array to run the effect only once on mount
-
-    // Update the state based on the 'showNav' query parameter
-    useEffect(() => {
+      }, []); 
+    
+      useEffect(() => {
         const showNavQueryParam = router.query.showNav === 'true';
         setIsShowNav(showNavQueryParam);
-    }, [router.query.showNav]);
+      }, [router.query.showNav]);
+    
+      const shouldShowNavMenu = headerShown && isShowNav;
+      const eventToShow = showAllEvents ? events : events.slice(0, 6);
 
-    const shouldShowNavMenu = headerShown && isShowNav;
-    const eventToShow = showAllEvents ? events : events.slice(0, 6);
-
-    return (
+      return (
         <>
-            {isShowNav && <NavMenu />}
-            <div className='bg-[#151515] pb-10'>
-                <div className='md:px-12 xl:px-6'>
-                    <div className='relative pt-36'>
-                        <div className='lg:w-2/3 text-center mx-auto'>
-                            <h1 className='text-white font-bold text-4xl md:text-6xl xl:text-7xl'>
-                                Events<span className='text-primary text-green-700'>.</span>
-                            </h1>
-                        </div>
-                    </div>
-                    <div className='mx-auto px-2 py-2 lg:px-10 lg:pt-12'>
-                        <div className='container justify-center lg:max-w-[1300px]'>
-                            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 '>
-                                {eventToShow.map((event) => (
-                                    <Link key={event.id} href={{ pathname: `/event/${event.id}` }}>
-                                        <div className='bg-slate-100 p-3 rounded-3xl m-4'>
-                                            <div>
-                                                <Image
-                                                    className='h-auto max-w-full rounded-xl'
-                                                    src={event.image}
-                                                    alt=''
-                                                    layout="responsive"
-                                                    width={1080}
-                                                    height={1080}
-                                                />
-                                            </div>
-                                            <h5 className='mb-2 text-2xl font-bold tracking-tight text-gray-900 pt-3 text-center '>{event.name}</h5>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                    {!showAllEvents && (
-                        <Link href={{ pathname: '/events', query: { allEvents: true, showNav: true } }} className='lg:w-2/3 md:text-center mx-auto flex justify-center'>
-                            <button
-                                type='button'
-                                className='text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-base px-6 py-3.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'
-                            >
-                                More Events
-                            </button>
-                        </Link>
-                    )}
+          {isShowNav && <NavMenu />}
+          <div className='bg-[#151515] pb-10'>
+            <div className='md:px-12 xl:px-6'>
+              <div className='relative pt-36'>
+                <div className='lg:w-2/3 text-center mx-auto'>
+                  <h1 className='text-white font-bold text-4xl md:text-6xl xl:text-7xl'>
+                    Events<span className='text-primary text-green-700'>.</span>
+                  </h1>
                 </div>
+              </div>
+              <div className='mx-auto px-2 py-2 lg:px-10 lg:pt-12'>
+                <div className='container justify-center lg:max-w-[1300px]'>
+                  <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 '>
+                    {eventToShow.map((event) => (
+                       <Link key={event.id} href={{ pathname: `/event/${event.id}` }}>
+                        <div className='bg-slate-100 p-3 rounded-3xl m-4 cursor-pointer'>
+                          <div>
+                            <Image
+                              className='h-auto max-w-full rounded-xl'
+                              src={event.image}
+                              alt=''
+                              layout='responsive'
+                              width={1080}
+                              height={1080}
+                            />
+                          </div>
+                          <h5 className='mb-2 text-2xl font-bold tracking-tight text-gray-900 pt-3 text-center '>
+                            {event.name}
+                          </h5>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              {!showAllEvents && (
+                <Link href={{ pathname: '/events', query: { allEvents: true, showNav: true } }} className='lg:w-2/3 md:text-center mx-auto flex justify-center'>
+                  <button
+                    type='button'
+                    className='text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-base px-6 py-3.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'
+                  >
+                    More Events
+                  </button>
+                </Link>
+              )}
             </div>
+          </div>
         </>
-    );
-};
-
-export default Events;
+      );
+    };
+    
+    export default Events;

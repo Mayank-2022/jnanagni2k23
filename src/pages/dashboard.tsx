@@ -5,6 +5,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from './firebase';
 import Image from 'next/image';
 import useAuthObserver from './../components/authObserver';
+import Link from 'next/link';
 
 // Define the Event interface
 interface EventType {
@@ -83,20 +84,23 @@ const Dashboard: React.FC = () => {
                         <div className='container justify-center lg:max-w-[1300px]'>
                             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 '>
                                 {events.map((event) => (
-                                    <div className='bg-slate-100 p-3 rounded-3xl m-4'>
-                                        <div>
-                                            <Image
-                                                className='h-auto max-w-full rounded-xl'
-                                                src={event.image}
-                                                alt=''
-                                                layout="responsive"
-                                                width={1080}
-                                                height={1080}
-                                            />
-                                        </div>
-                                        <h5 className='mb-2 text-2xl font-bold tracking-tight text-gray-900 pt-3 text-center '>{event.name}</h5>
+                                    <Link key={event.id} href={{ pathname: `/event/${event.id}` }}>
+                                    <div className='bg-slate-100 p-3 rounded-3xl m-4 cursor-pointer'>
+                                      <div>
+                                        <Image
+                                          className='h-auto max-w-full rounded-xl'
+                                          src={event.image}
+                                          alt=''
+                                          layout='responsive'
+                                          width={1080}
+                                          height={1080}
+                                        />
+                                      </div>
+                                      <h5 className='mb-2 text-2xl font-bold tracking-tight text-gray-900 pt-3 text-center '>
+                                        {event.name}
+                                      </h5>
                                     </div>
-
+                                  </Link>
                                 ))}
                             </div>
                         </div>

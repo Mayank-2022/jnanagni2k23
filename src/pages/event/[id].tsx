@@ -3,9 +3,8 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import NavMenu from '@/components/NavMenu';
-import { collection, addDoc, getDocs, query, where, CollectionReference, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, CollectionReference, deleteDoc, getDoc, doc } from 'firebase/firestore';
 import { db } from './../firebase';
-import useAuth from './../../components/authObserver';
 import useAuthObserver from './../../components/authObserver';
 import LoadingSpinner from '@/components/LoadingSpinner';
 // Define the EventType interface
@@ -60,22 +59,23 @@ const EventDetails = () => {
     useEffect(() => {
         const getEventFromFirestore = async () => {
             try {
-                const q = query(collection(db, 'events'), where('id', '==', Number(id)));
-                const eventDoc = await getDocs(q);
+                if (id) {
+                    const eventDoc = await getDoc(doc(db, 'events', id as string));
 
-                if (eventDoc.docs.length === 0) {
-                    console.error(`Event with id ${id} not found`);
-                    setLoading(false);
-                    return;
+                    if (eventDoc.exists()) {
+                        const eventData = eventDoc.data() as EventType;
+                        console.log('Fetched event data:', eventData);
+
+                        setEvent({
+                            ...eventData,
+                            id: eventDoc.id,
+                        });
+                    } else {
+                        console.error(`Event with id ${id} not found`);
+                    }
+                } else {
+                    console.error('Event ID is undefined');
                 }
-
-                const eventData = eventDoc.docs[0].data() as EventType;
-                console.log('Fetched event data:', eventData);
-
-                setEvent({
-                    ...eventData,
-                    id: eventDoc.docs[0].id,
-                });
 
                 setLoading(false);
             } catch (error) {
@@ -84,9 +84,7 @@ const EventDetails = () => {
             }
         };
 
-        if (id) {
-            getEventFromFirestore();
-        }
+        getEventFromFirestore();
     }, [id]);
 
     if (loading) {
