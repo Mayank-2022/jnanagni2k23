@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import NavMenu from '@/components/NavMenu';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, CollectionReference, deleteDoc } from 'firebase/firestore';
 import { db } from './../firebase';
 import useAuth from './../../components/authObserver';
 import useAuthObserver from './../../components/authObserver';
@@ -31,6 +31,31 @@ const EventDetails = () => {
     const [event, setEvent] = useState<EventType | null>(null);
     const { user, error } = useAuthObserver();
     const [loading, setLoading] = useState(true);
+    const [isRegistered, setIsRegistered] = useState(false);
+
+    useEffect(() => {
+        // Check if the user is already registered when the component mounts
+        const checkRegistration = async () => {
+            try {
+                if (user && event) {
+                    const { uid } = user;
+                    const eventRegistrationCollection = collection(db, 'event_registration');
+                    const existingRegistration = await getDocs(
+                        query(
+                            eventRegistrationCollection as CollectionReference<EventType>,
+                            where('event_id', '==', event.id),
+                            where('user_id', '==', uid)
+                        )
+                    );
+                    setIsRegistered(!existingRegistration.empty);
+                }
+            } catch (error) {
+                console.error('Error checking registration:', error);
+            }
+        };
+
+        checkRegistration();
+    }, [user, event]);
 
     useEffect(() => {
         const getEventFromFirestore = async () => {
@@ -80,33 +105,50 @@ const EventDetails = () => {
     };
 
     // Handler for registering the event
-    const registerEvent = async () => {
+    const handleRegisterEvent = async () => {
         try {
-          if (!user) {
-            // If the user is not logged in, redirect to the login page
-            router.push('/login');
-            return;
-          }
-      
-          const { uid } = user;
-      
-          // Get a reference to the collection
-          const eventRegistrationCollection = collection(db, 'event_registration');
-      
-          // Add the data to the collection, and Firestore will generate a unique document ID
-          const eventRef = await addDoc(eventRegistrationCollection, {
-            event_id: event?.id,
-            event_name: event?.name,
-            user_id: uid,
-              // Include user's name in the registration data
-            // Add other fields you want to save in the document
-          });
-      
-          console.log('Event data saved successfully! Document ID:', eventRef.id);
+            if (!user) {
+                // If the user is not logged in, redirect to the login page
+                router.push('/login');
+                return;
+            }
+
+            const { uid } = user;
+            const eventRegistrationCollection = collection(db, 'event_registration');
+
+            if (isRegistered) {
+                // If already registered, unregister the user
+                const existingRegistration = await getDocs(
+                    query(
+                        eventRegistrationCollection as CollectionReference<EventType>,
+                        where('event_id', '==', event?.id),
+                        where('user_id', '==', uid)
+                    )
+                );
+
+                if (!existingRegistration.empty) {
+                    existingRegistration.forEach(async (doc) => {
+                        await deleteDoc(doc.ref);
+                        console.log('Event data deleted successfully!');
+                    });
+                }
+            } else {
+                // If not registered, register the user
+                const eventRef = await addDoc(eventRegistrationCollection, {
+                    event_id: event?.id,
+                    event_name: event?.name,
+                    user_id: uid,
+                });
+
+                console.log('Event data saved successfully! Document ID:', eventRef.id);
+            }
+
+            // Toggle the registration status
+            setIsRegistered(!isRegistered);
         } catch (error) {
-          console.error('Error saving event data:', error);
+            console.error('Error saving/deleting event data:', error);
         }
-      };
+    };
 
     // Render the component
     return (
@@ -178,7 +220,7 @@ const EventDetails = () => {
                             </ul>
                         </div>
                         <div className="md:p-10">
-                            {/* Add buttons for viewing the rulebook and registering for the event */}
+                            {/* Add buttons for viewing the rulebook and registering/unregistering for the event */}
                             <button
                                 type="button"
                                 onClick={handleViewRuleBook}
@@ -188,11 +230,12 @@ const EventDetails = () => {
                             </button>
                             <button
                                 type="button"
-                                onClick={registerEvent}
-                                className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-base px-6 py-3.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
+                                onClick={handleRegisterEvent}
+                                className={`text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-base px-6 py-3.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 ${isRegistered ? 'bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700' : ''
+                                    }`}
                                 style={{ marginLeft: '15px' }}
                             >
-                                Register
+                                {isRegistered ? 'Unregister' : 'Register'}
                             </button>
                         </div>
                     </div>

@@ -60,41 +60,24 @@ const NavMenu = () => {
   const [navItems, setNavItems] = useState([...defaultNavItems]);
 
   useEffect(() => {
-    const handleResize = () => {
-      // Check the window width and update the nav items accordingly
-      if (window.innerWidth <= 768) {
-        setNavItems((prevNavItems) => {
-          const dashboardItem = { href: '/dashboard', text: 'Dashboard' };
+    // Update localNavItems based on user login status
+    setNavItems((prevNavItems) => {
+      const dashboardItem = { href: '/dashboard', text: 'Dashboard' };
 
-          // If user is logged in and the dashboard item doesn't exist, add it
-          if (user && !prevNavItems.find((item) => item.text === dashboardItem.text)) {
-            return [...prevNavItems, dashboardItem];
-          }
-
-          // If user is not logged in and the dashboard item exists, remove it
-          if (!user) {
-            return prevNavItems.filter((item) => item.text !== dashboardItem.text);
-          }
-
-          // No changes needed
-          return prevNavItems;
-        });
+      // If user is logged in and the dashboard item doesn't exist, add it
+      if (user && !prevNavItems.find((item) => item.text === dashboardItem.text)) {
+        return [...prevNavItems, dashboardItem];
       }
-    };
 
-    // Add event listener for window resize
-    window.addEventListener('resize', handleResize);
+      // If user is not logged in and the dashboard item exists, remove it
+      if (!user) {
+        return prevNavItems.filter((item) => item.text !== dashboardItem.text);
+      }
 
-    // Initial call to handleResize
-    handleResize();
-
-    // Remove event listener on component unmount
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+      // No changes needed
+      return prevNavItems;
+    });
   }, [user]);
-
-
   const handleClick = () => {
     setIsOpen(true);
   };
@@ -119,7 +102,7 @@ const NavMenu = () => {
 
         {/* Mobile Menu */}
         <div className='-my-2 -mr-2 lg:hidden' onClick={handleClick}>
-          <MobileMenu onClick={handleClick} />
+        <MobileMenu onClick={handleClick} />
 
         </div>
 
@@ -147,8 +130,6 @@ const NavMenu = () => {
           </li>
         </nav>
       </div>
-
-
       {/* Mobile Menu Dialog */}
       {isOpen && (
         <Dialog open={isOpen} onClose={handleClose} className='fixed inset-0 z-50 lg:hidden'>
