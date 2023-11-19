@@ -4,7 +4,7 @@ import NextLink from 'next/link';
 import MobileMenu from './MobileMenu';
 import NavItem from './NavItem';
 import { useRouter } from 'next/router';
-import { auth } from './../pages/firebase';
+import { auth } from '../../firebase';
 import { useAuth } from '@/context/authContext';
 
 const defaultNavItems = [

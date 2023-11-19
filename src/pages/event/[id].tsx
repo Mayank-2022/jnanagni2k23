@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import NavMenu from '@/components/NavMenu';
 import { collection, addDoc, getDocs, query, where, CollectionReference, deleteDoc, getDoc, doc } from 'firebase/firestore';
-import { db } from './../firebase';
+import { db } from '../../../firebase';
 import useAuthObserver from './../../components/authObserver';
 import LoadingSpinner from '@/components/LoadingSpinner';
 // Define the EventType interface
