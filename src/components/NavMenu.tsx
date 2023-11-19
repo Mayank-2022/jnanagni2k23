@@ -87,32 +87,28 @@ const NavMenu = () => {
   };
 
   return (
-    <div className='text-white'>
-      {/* Navigation Bar */}
-      <div className='flex items-center justify-between max-w-6xl lg:max-w-[72rem] xl:max-w-6xl px-4 py-6 mx-auto sm:px-6'>
-        {/* Logo */}
-        <div className='flex justify-start lg:w-0 transition whitespace-nowrap hover:transition duration-300 text-2xl font-bold cursor-pointer'>
+    <div className=' text-white'>
+      <div
+        className='flex items-center justify-between max-w-6xl lg:max-w-[72rem] xl:max-w-6xl px-4 py-6 mx-auto sm:px-6
+     '
+      >
+        <div className='flex justify-start lg:w-0  transition whitespace-nowrap hover:transition duration-300 text-2xl font-bold cursor-pointer  '>
           <span className='sr-only'>Logo</span>
           <NextLink href='/' passHref>
-            <span className='opacity-100 hover:text-lightGreen dark:hover:text-lightGreen'>
+            <span className=' opacity-100 hover:text-lightGreen dark:hover:text-lightGreen '>
               JÑĀNĀGNI
             </span>
           </NextLink>
         </div>
-
-        {/* Mobile Menu */}
         <div className='-my-2 -mr-2 lg:hidden' onClick={handleClick}>
-        <MobileMenu onClick={handleClick} />
+          <MobileMenu onClick={handleClick} />
 
         </div>
-
-        {/* Navigation Items */}
-        <nav className='hidden space-x-6 text-lg justify-center lg:flex'>
+        <nav className='hidden space-x-6 text-lg justify-center   lg:flex '>
           {navItems.map(({ href, text }, index) => (
-            <NavItem key={index} href={href} text={text} />
+            <NavItem href={href} text={text} />
           ))}
-          {/* Logout or Login Button */}
-          <li>
+          <>
             {email ? (
               <button
                 onClick={handleLogout}
@@ -127,8 +123,10 @@ const NavMenu = () => {
                 </p>
               </NextLink>
             )}
-          </li>
+          </>
         </nav>
+
+
       </div>
       {/* Mobile Menu Dialog */}
       {isOpen && (

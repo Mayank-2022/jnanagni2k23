@@ -17,7 +17,7 @@ export default function Login() {
         id: string;
         name: string;
         // Add other properties as needed
-      };      
+    };
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
@@ -28,7 +28,7 @@ export default function Login() {
     const [loginError, setLoginError] = useState(null);
     const [signUpLoading, setSignUpLoading] = useState(false);
     const [loginLoading, setLoginLoading] = useState(false);
-    
+
     const [signUpError, setSignUpError] = useState(null);
     const router = useRouter();
 
@@ -44,7 +44,7 @@ export default function Login() {
         try {
             setLoginLoading(true);
             const response: UserCredential = await signInWithEmailAndPasswordFirebase(auth, email, password);
-                        console.log('Logged in successfully', response);
+            console.log('Logged in successfully', response);
             router.replace('/dashboard');
             // If you need the user, you can access it like this:
             const user = response.user;
@@ -59,21 +59,21 @@ export default function Login() {
         try {
             setSignUpLoading(true);
             const response: UserCredential = await createUserWithEmailAndPasswordFirebase(auth, email, password);
-    
+
             // Extract user information from the UserCredential
             const user: UserType = {
                 id: response.user.uid,
                 name,
                 // Add other properties as needed
             };
-    
+
             // Save additional user data to Firebase Realtime Database
             await databaseSet(databaseRef(database, `users/${response.user.uid}`), {
                 name,
                 email,
                 phone,
             });
-            
+
             // Handle successful sign-up, e.g., redirect to the dashboard
             console.log('Signed up successfully', response);
             router.replace('/dashboard');
@@ -167,7 +167,7 @@ export default function Login() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
-                            {!validateEmail(email) && email && (
+                            {isSignUp && !validateEmail(email) && email && (
                                 <p className="text-red-500 mt-2">Please enter a valid email address</p>
                             )}
                         </div>
@@ -182,7 +182,7 @@ export default function Login() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
-                            {!validatePassword(password) && password && (
+                            {isSignUp && !validatePassword(password) && password && (
                                 <p className="text-red-500 mt-2">Password must be at least 6 characters long and include a number</p>
                             )}
                             {loginError && <p className="text-red-500 mt-2">{(loginError as any)?.data?.message}</p>}
