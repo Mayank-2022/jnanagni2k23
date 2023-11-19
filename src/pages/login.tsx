@@ -10,7 +10,7 @@ import { app } from './firebase';
 const auth = getAuth(app);
 const database = getDatabase(app);
 
-  
+
 
 export default function Login() {
     type UserType = {
@@ -44,7 +44,8 @@ export default function Login() {
         try {
             setLoginLoading(true);
             const response: UserCredential = await signInWithEmailAndPasswordFirebase(auth, email, password);
-            console.log('Logged in successfully', response);
+                        console.log('Logged in successfully', response);
+            router.replace('/dashboard');
             // If you need the user, you can access it like this:
             const user = response.user;
         } catch (error: any) {
@@ -72,9 +73,10 @@ export default function Login() {
                 email,
                 phone,
             });
-    
+            
             // Handle successful sign-up, e.g., redirect to the dashboard
             console.log('Signed up successfully', response);
+            router.replace('/dashboard');
             setLoginData({ user });
         } catch (error) {
             handleFirebaseError(error);
@@ -107,8 +109,8 @@ export default function Login() {
         // Handle successful sign up
         if (loginData?.user) {
             // Example: Redirect to the dashboard or show a success message
+            //('/Dashboard');
             console.log('Successfully signed up:', loginData);
-            router.replace('/');
         }
     }, [loginData, router]);
 
