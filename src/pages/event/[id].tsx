@@ -18,6 +18,7 @@ interface EventType {
     eventDetail: string[];
     coordinator: string[];
     rulebook: string;
+    isEventOpen: boolean;
     schedule: {
         day: string;
         venue: string;
@@ -239,15 +240,17 @@ const EventDetails = () => {
                             >
                                 Rule Book
                             </button>
-                            <button
-                                type="button"
-                                onClick={handleRegisterEvent}
-                                className={`text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-base px-6 py-3.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 ${isRegistered ? 'bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700' : ''
-                                    }`}
-                                style={{ marginLeft: '15px' }}
-                            >
-                                {isRegistered ? 'Unregister' : 'Register'}
-                            </button>
+                            {event?.isEventOpen && (
+                                <button
+                                    type="button"
+                                    onClick={handleRegisterEvent}
+                                    className={`text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-base px-6 py-3.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 ${isRegistered ? 'bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700' : ''
+                                        }`}
+                                    style={{ marginLeft: '15px' }}
+                                >
+                                    {isRegistered ? 'Unregister' : 'Register'}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
