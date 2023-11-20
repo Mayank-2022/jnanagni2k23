@@ -7,6 +7,7 @@ import { collection, addDoc, getDocs, query, where, CollectionReference, deleteD
 import { db } from '../../../firebase';
 import useAuthObserver from './../../components/authObserver';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { Console } from 'console';
 // Define the EventType interface
 interface EventType {
     id: string;
@@ -15,6 +16,7 @@ interface EventType {
     image: string;
     aboutEvent: string;
     eventDetail: string[];
+    coordinator: string[];
     rulebook: string;
     schedule: {
         day: string;
@@ -110,6 +112,7 @@ const EventDetails = () => {
                 router.push('/login');
                 return;
             }
+
 
             const { uid } = user;
             const eventRegistrationCollection = collection(db, 'event_registration');
@@ -213,6 +216,16 @@ const EventDetails = () => {
                             </h4>
                             <ul className="list-disc pl-4 mt-4">
                                 {event?.eventDetail.map((item, index) => (
+                                    <li className='lg:p-2 text-justify lg:ml-10 ' key={index}>{item}</li>
+                                ))}
+                            </ul>
+                        </div>
+                        <div className="md:p-10">
+                            <h4 className='text-3xl font-bold  font-headings md:text-5xl'>
+                                Student Coordinator
+                            </h4>
+                            <ul className="list-disc pl-4 mt-4">
+                                {event?.coordinator?.map((item, index) => (
                                     <li className='lg:p-2 text-justify lg:ml-10 ' key={index}>{item}</li>
                                 ))}
                             </ul>
