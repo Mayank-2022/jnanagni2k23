@@ -8,51 +8,29 @@ import { useRouter } from 'next/router';
 
 const teamDetails = [
     {
-        name: 'Munavvar Sinan k p',
-        image: munavvar,
+        name: 'Sujay Kumar',
+        image: profile,
+        year: "3'rd year ECE",
+        linkedin: 'https://www.linkedin.com/in/kumarsujay03/',
+        github: 'https://github.com/kumar_sujay03',
+        twitter: 'https://twitter.com/',
+        instagram: 'https://www.instagram.com/kumar_sujay03',
+
+    },
+    {
+        name: 'Mayank Chaturvedy',
+        image: profile,
         year: "3'rd year CSE",
-        linkedin: 'https://www.linkedin.com/in/munavvarsinan/',
-        github: 'https://github.com/MunavvarSinan',
-        twitter: 'https://twitter.com/SinanMunavvar',
-        instagram: 'https://www.instagram.com/__.munavvar.__/',
-
-    },
-    {
-        name: 'Thanay',
-        image: thanay,
-        year: "4'th year CSE",
-        linkedin: 'https://www.linkedin.com/in/',
+        linkedin: 'https://www.linkedin.com/in/mayank-chaturvedy/',
         github: 'https://github.com/',
         twitter: 'https://twitter.com/',
         instagram: 'https://www.instagram.com/',
 
     },
     {
-        name: 'Vithesh',
-        image: mash,
-        year: "4'th year CSE",
-        linkedin: 'https://www.linkedin.com/in/',
-        github: 'https://github.com/',
-        twitter: 'https://twitter.com/',
-        instagram: 'https://www.instagram.com/',
-
-    },
-    {
-        name: 'Mehfooz',
-        image: mehfooz,
-        year: "4'th year CSE",
-
-        linkedin: 'https://www.linkedin.com/in/',
-        github: 'https://github.com/',
-        twitter: 'https://twitter.com/',
-        instagram: 'https://www.instagram.com/',
-
-    },
-    {
-        name: 'Vikas',
+        name: 'Saurabh Singh',
         image: profile,
-        year: "4'th year CSE",
-
+        year: "3'rd year CSE",
         linkedin: 'https://www.linkedin.com/in/',
         github: 'https://github.com/',
         twitter: 'https://twitter.com/',
@@ -60,9 +38,49 @@ const teamDetails = [
 
     },
     {
-        name: 'Vishal',
+        name: 'Aakash Kumar',
         image: profile,
-        year: "4'th year CSE",
+        year: "3'rd year CSE",
+        linkedin: 'https://www.linkedin.com/in/',
+        github: 'https://github.com/',
+        twitter: 'https://twitter.com/',
+        instagram: 'https://www.instagram.com/',
+
+    },
+    {
+        name: 'Shashwat Gupta',
+        image: profile,
+        year: "3'rd year CSE",
+        linkedin: 'https://www.linkedin.com/in/',
+        github: 'https://github.com/',
+        twitter: 'https://twitter.com/',
+        instagram: 'https://www.instagram.com/',
+
+    },
+    {
+        name: 'Aman Patel',
+        image: profile,
+        year: "3'rd year ECE",
+        linkedin: 'https://www.linkedin.com/in/',
+        github: 'https://github.com/',
+        twitter: 'https://twitter.com/',
+        instagram: 'https://www.instagram.com/',
+
+    },
+    {
+        name: 'Sujal Sharma',
+        image: profile,
+        year: "3'rd year ECE",
+        linkedin: 'https://www.linkedin.com/in/',
+        github: 'https://github.com/',
+        twitter: 'https://twitter.com/',
+        instagram: 'https://www.instagram.com/',
+
+    },
+    {
+        name: 'Devansh Saini',
+        image: profile,
+        year: "3'rd year EE",
         linkedin: 'https://www.linkedin.com/in/',
         github: 'https://github.com/',
         twitter: 'https://twitter.com/',
