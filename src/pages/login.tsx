@@ -2,8 +2,9 @@ import Container from '@/components/Layout';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Auth, UserCredential, createUserWithEmailAndPassword as createUserWithEmailAndPasswordFirebase, getAuth, signInWithEmailAndPassword as signInWithEmailAndPasswordFirebase } from 'firebase/auth';
-import { Database, ref as databaseRef, set as databaseSet, getDatabase } from 'firebase/database';
+import { Database, ref as databaseRef, set as databaseSet, get, getDatabase } from 'firebase/database';
 import { app } from '../../firebase';
+import { useAuth } from '@/context/authContext';
 
 
 // Initialize auth and database with the correct types
@@ -18,6 +19,7 @@ export default function Login() {
         name: string;
         // Add other properties as needed
     };
+    const { user } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
@@ -36,8 +38,28 @@ export default function Login() {
     const validatePhoneNumber = (value: string): boolean => /^\d{10}$/.test(value);
     const validatePassword = (value: string): boolean => /^(?=.*[A-Za-z])(?=.*\d).{6,}$/.test(value);
     const handleFirebaseError = (error: any) => {
-        // Handle Firebase authentication errors
-        console.error(error);
+        let errorMessage = "An error occurred. Please try again.";
+
+        switch (error.code) {
+            case "auth/wrong-password":
+                errorMessage = "Incorrect password. Please try again.";
+                break;
+            case "auth/user-not-found":
+                errorMessage = "User not found. Please check your credentials.";
+                break;
+            case "auth/email-already-in-use":
+                errorMessage = "Email is already in use. Please use a different email.";
+                break;
+            // Add more cases for other Firebase authentication errors as needed
+            default:
+                errorMessage = error.code === "auth/invalid-login-credentials"
+                    ? "Invalid login credentials. Please check your email and password."
+                    : error.message;
+                break;
+        }
+
+        // Display the error message to the user (you can use a modal, alert, etc.)
+        alert(errorMessage);
     };
 
     const handleFirebaseLogin = async () => {
@@ -45,13 +67,24 @@ export default function Login() {
             setLoginLoading(true);
             const response: UserCredential = await signInWithEmailAndPasswordFirebase(auth, email, password);
             console.log('Logged in successfully', response);
-            router.replace('/dashboard');
-            // If you need the user, you can access it like this:
-            const user = response.user;
+    
+            // Check if the user has the "isAdmin" key in the database
+            const userRef = databaseRef(database, `users/${response.user.uid}`);
+            const userSnapshot = await get(userRef);
+            const isAdmin = userSnapshot.val()?.isAdmin;
+    
+            // Redirect based on the isAdmin key
+            if (isAdmin) {
+                router.replace('/adminDashboard');
+            } else {
+                router.replace('/dashboard');
+            }
         } catch (error: any) {
             handleFirebaseError(error);
             // Set login error
             setLoginError(error.message); // Or handle it in a way that suits your application
+        } finally {
+            setLoginLoading(false);
         }
     };
 
@@ -78,8 +111,9 @@ export default function Login() {
             console.log('Signed up successfully', response);
             router.replace('/dashboard');
             setLoginData({ user });
-        } catch (error) {
+        } catch (error: any) {
             handleFirebaseError(error);
+            setSignUpError(error.message);
         }
     };
 

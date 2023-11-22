@@ -62,8 +62,7 @@ const NavMenu = () => {
   useEffect(() => {
     // Update localNavItems based on user login status
     setNavItems((prevNavItems) => {
-      const dashboardItem = { href: '/dashboard', text: 'Dashboard' };
-
+      const dashboardItem = { href: user && user.isAdmin ? '/adminDashboard' : '/dashboard', text: 'Dashboard' };
       // If user is logged in and the dashboard item doesn't exist, add it
       if (user && !prevNavItems.find((item) => item.text === dashboardItem.text)) {
         return [...prevNavItems, dashboardItem];
@@ -88,46 +87,42 @@ const NavMenu = () => {
 
   return (
     <div className=' text-white'>
-      <div
-        className='flex items-center justify-between max-w-6xl lg:max-w-[72rem] xl:max-w-6xl px-4 py-6 mx-auto sm:px-6
-     '
-      >
-        <div className='flex justify-start lg:w-0  transition whitespace-nowrap hover:transition duration-300 text-2xl font-bold cursor-pointer  '>
-          <span className='sr-only'>Logo</span>
-          <NextLink href='/' passHref>
-            <span className=' opacity-100 hover:text-lightGreen dark:hover:text-lightGreen '>
-              JÑĀNĀGNI
-            </span>
-          </NextLink>
-        </div>
-        <div className='-my-2 -mr-2 lg:hidden' onClick={handleClick}>
-          <MobileMenu onClick={handleClick} />
-
-        </div>
-        <nav className='hidden space-x-6 text-lg justify-center   lg:flex '>
-          {navItems.map(({ href, text }, index) => (
-            <NavItem href={href} text={text} />
-          ))}
-          <>
-            {email ? (
-              <button
-                onClick={handleLogout}
-                className='hover:text-lightGreen dark:hover:text-emerald-500 bg-[#EACD69] hover:text-white text-black font-bold py-2 px-4 rounded-full text-center'
-              >
-                Logout
-              </button>
-            ) : (
-              <NextLink href='/login'>
-                <p className='hover:text-lightGreen dark:hover:text-emerald-500 bg-[#EACD69] hover:text-white text-black font-bold py-2 px-4 rounded-full text-center'>
-                  Login
-                </p>
-              </NextLink>
-            )}
-          </>
-        </nav>
-
-
+    <div
+      className='flex items-center justify-between max-w-6xl lg:max-w-[72rem] xl:max-w-6xl px-4 py-6 mx-auto sm:px-6'
+    >
+      <div className='flex justify-start lg:w-0  transition whitespace-nowrap hover:transition duration-300 text-2xl font-bold cursor-pointer  '>
+        <span className='sr-only'>Logo</span>
+        <NextLink href='/' passHref>
+          <span className=' opacity-100 hover:text-lightGreen dark:hover:text-lightGreen '>
+            JÑĀNĀGNI
+          </span>
+        </NextLink>
       </div>
+      <div className='-my-2 -mr-2 lg:hidden' onClick={handleClick}>
+        <MobileMenu onClick={handleClick} />
+      </div>
+      <nav className='hidden space-x-6 text-lg justify-center lg:flex '>
+        {navItems.map(({ href, text }, index) => (
+          <NavItem key={index} href={href} text={text} />
+        ))}
+        <>
+          {email ? (
+            <button
+              onClick={handleLogout}
+              className='hover:text-lightGreen dark:hover:text-emerald-500 bg-[#EACD69] hover:text-white text-black font-bold py-2 px-4 rounded-full text-center'
+            >
+              Logout
+            </button>
+          ) : (
+            <NextLink href='/login'>
+              <p className='hover:text-lightGreen dark:hover:text-emerald-500 bg-[#EACD69] hover:text-white text-black font-bold py-2 px-4 rounded-full text-center'>
+                Login
+              </p>
+            </NextLink>
+          )}
+        </>
+      </nav>
+    </div>
       {/* Mobile Menu Dialog */}
       {isOpen && (
         <Dialog open={isOpen} onClose={handleClose} className='fixed inset-0 z-50 lg:hidden'>
