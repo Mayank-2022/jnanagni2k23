@@ -4,7 +4,7 @@ import NavMenu from '@/components/NavMenu';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../firebase';
 import Image from 'next/image';
-import useAuthObserver from './../components/authObserver';
+import {useAuth} from '@/context/authContext';
 import Link from 'next/link';
 
 // Define the Event interface
@@ -19,7 +19,7 @@ const Dashboard: React.FC = () => {
   const router = useRouter();
   const [isShowNav, setIsShowNav] = useState(true);
   const [events, setEvents] = useState<EventType[]>([]);
-  const { user } = useAuthObserver(); // Destructure the user object
+  const { user } = useAuth(); // Destructure the user object
   useEffect(() => {
     const handlePopstate = () => {
       setIsShowNav(true);

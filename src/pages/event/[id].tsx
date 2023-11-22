@@ -5,9 +5,9 @@ import { useRouter } from 'next/router';
 import NavMenu from '@/components/NavMenu';
 import { collection, addDoc, getDocs, query, where, CollectionReference, deleteDoc, getDoc, doc } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import useAuthObserver from './../../components/authObserver';
+import {useAuth} from '@/context/authContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { Console } from 'console';
+
 // Define the EventType interface
 interface EventType {
     id: string;
@@ -31,7 +31,7 @@ const EventDetails = () => {
     const router = useRouter();
     const { id } = router.query;
     const [event, setEvent] = useState<EventType | null>(null);
-    const { user, error } = useAuthObserver();
+    const { user, error } = useAuth();
     const [loading, setLoading] = useState(true);
     const [isRegistered, setIsRegistered] = useState(false);
 
@@ -67,7 +67,6 @@ const EventDetails = () => {
 
                     if (eventDoc.exists()) {
                         const eventData = eventDoc.data() as EventType;
-                        console.log('Fetched event data:', eventData);
 
                         setEvent({
                             ...eventData,
@@ -115,7 +114,7 @@ const EventDetails = () => {
             }
 
 
-            const { uid } = user;
+            const { uid, name,phone, email } = user;
             const eventRegistrationCollection = collection(db, 'event_registration');
 
             if (isRegistered) {
@@ -131,7 +130,7 @@ const EventDetails = () => {
                 if (!existingRegistration.empty) {
                     existingRegistration.forEach(async (doc) => {
                         await deleteDoc(doc.ref);
-                        console.log('Event data deleted successfully!');
+                        alert('Event data deleted successfully!');
                     });
                 }
             } else {
@@ -140,9 +139,12 @@ const EventDetails = () => {
                     event_id: event?.id,
                     event_name: event?.name,
                     user_id: uid,
+                    user_name:name,
+                    user_email:email,
+                    user_phone:phone,
                 });
 
-                console.log('Event data saved successfully! Document ID:', eventRef.id);
+                alert('Event register successfully! Event name:');
             }
 
             // Toggle the registration status

@@ -1,6 +1,8 @@
 // authContext.js
 import { createContext, useContext, useState, useEffect } from 'react';
-import { auth } from '../../firebase'; 
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getDatabase, ref as databaseRef, get } from 'firebase/database';
+import { app } from '../../firebase';
 
 const AuthContext = createContext();
 
@@ -8,17 +10,31 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((authUser) => {
+    const auth = getAuth(app); // Get the auth instance
+
+    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       if (authUser) {
-        // User is signed in
-        setUser(authUser);
+        const userRef = databaseRef(getDatabase(), `users/${authUser.uid}`);
+        const userSnapshot = await get(userRef);
+
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.val();
+
+          setUser({
+            uid: authUser.uid,
+            name: userData.name,
+            email: authUser.email,
+            phone: userData.phone,
+            isAdmin: userData.isAdmin || false,
+          });
+        } else {
+          setUser(null);
+        }
       } else {
-        // User is signed out
         setUser(null);
       }
     });
 
-    // Cleanup function to unsubscribe from the listener when the component unmounts
     return () => unsubscribe();
   }, []);
 
